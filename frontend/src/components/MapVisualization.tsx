@@ -1,182 +1,257 @@
 import { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Map, RefreshCw, Network, Route as RouteIcon } from "lucide-react";
+import { flightAPI, Route } from "@/lib/api";
+import { toast } from "sonner";
 
 interface MapVisualizationProps {
-  route: string[];
+  route?: string[];
+  routes?: Route[];
+  flights?: string[];
+  routeType?: string;
+  showNetworkOverview?: boolean;
+  showComparison?: boolean;
 }
 
-// Airport coordinates (mock data - replace with actual coordinates)
-const airportCoordinates: Record<string, [number, number]> = {
-  JFK: [-73.7781, 40.6413],
-  LHR: [-0.4543, 51.4700],
-  CDG: [2.5479, 49.0097],
-  LAX: [-118.4085, 33.9416],
-  NRT: [140.3929, 35.7720],
-  DXB: [55.3644, 25.2532],
-  SIN: [103.9915, 1.3644],
-  ORD: [-87.9073, 41.9742],
-  ATL: [-84.4277, 33.6407],
-  SFO: [-122.3790, 37.6213],
-};
+const MapVisualization = ({ 
+  route = [], 
+  routes = [],
+  flights = [],
+  routeType = "optimal",
+  showNetworkOverview = false,
+  showComparison = false
+}: MapVisualizationProps) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [mapHtml, setMapHtml] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
-const MapVisualization = ({ route }: MapVisualizationProps) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState("");
-  const [showTokenInput, setShowTokenInput] = useState(true);
+  const loadMapVisualization = async () => {
+    if ((!route.length && !showNetworkOverview && !showComparison) || loading) return;
 
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken || map.current) return;
+    setLoading(true);
+    setError("");
 
     try {
-      mapboxgl.accessToken = mapboxToken;
+      let htmlContent = "";
 
-      const mapInstance = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: "mapbox://styles/mapbox/light-v11",
-        center: [0, 30],
-        zoom: 2,
-        projection: { name: "globe" } as any,
-      });
-
-      mapInstance.addControl(new mapboxgl.NavigationControl(), "top-right");
-
-      mapInstance.on("load", () => {
-        // Add markers for each airport in the route
-        const coordinates: [number, number][] = [];
-        
-        route.forEach((airport, index) => {
-          const coord = airportCoordinates[airport];
-          if (coord) {
-            coordinates.push(coord);
-            
-            // Add marker
-            const el = document.createElement("div");
-            el.className = "marker";
-            el.style.width = "30px";
-            el.style.height = "30px";
-            el.style.borderRadius = "50%";
-            el.style.backgroundColor = index === 0 || index === route.length - 1 ? "#0EA5E9" : "#F59E0B";
-            el.style.border = "3px solid white";
-            el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
-
-            new mapboxgl.Marker(el)
-              .setLngLat(coord)
-              .setPopup(
-                new mapboxgl.Popup({ offset: 25 }).setHTML(
-                  `<div style="padding: 8px;">
-                    <strong>${airport}</strong>
-                    <p style="margin: 4px 0 0; font-size: 12px; color: #666;">
-                      ${index === 0 ? "Origin" : index === route.length - 1 ? "Destination" : "Layover"}
-                    </p>
-                  </div>`
-                )
-              )
-              .addTo(mapInstance);
-          }
+      if (showNetworkOverview) {
+        // Load network overview map
+        console.log('Loading network overview map...');
+        htmlContent = await flightAPI.getNetworkVisualization();
+      } else if (showComparison && routes.length > 0) {
+        // Load routes comparison map
+        console.log('Loading routes comparison map for', routes.length, 'routes...');
+        htmlContent = await flightAPI.getRoutesComparison(routes);
+      } else if (route.length > 0) {
+        // Load single route map
+        console.log('Loading route map for:', route);
+        htmlContent = await flightAPI.getRouteVisualization({
+          airports: route,
+          flights: flights,
+          route_type: routeType
         });
+      }
 
-        // Draw route lines
-        if (coordinates.length > 1) {
-          mapInstance.addSource("route", {
-            type: "geojson",
-            data: {
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "LineString",
-                coordinates: coordinates,
-              },
-            },
-          });
-
-          mapInstance.addLayer({
-            id: "route",
-            type: "line",
-            source: "route",
-            layout: {
-              "line-join": "round",
-              "line-cap": "round",
-            },
-            paint: {
-              "line-color": "#0EA5E9",
-              "line-width": 3,
-              "line-dasharray": [2, 2],
-            },
-          });
-
-          // Fit bounds to show entire route
-          const bounds = new mapboxgl.LngLatBounds();
-          coordinates.forEach((coord) => bounds.extend(coord));
-          mapInstance.fitBounds(bounds, { padding: 80 });
-        }
-      });
-
-      map.current = mapInstance;
-      setShowTokenInput(false);
-
-      return () => {
-        mapInstance.remove();
-      };
-    } catch (error) {
-      console.error("Error initializing map:", error);
+      if (htmlContent && htmlContent.trim()) {
+        console.log('Map HTML loaded successfully, size:', htmlContent.length);
+        setMapHtml(htmlContent);
+      } else {
+        throw new Error('Empty HTML content received');
+      }
+    } catch (err) {
+      console.error("Error loading map:", err);
+      setError(err instanceof Error ? err.message : "Failed to load map visualization");
+      toast.error("Failed to load map visualization");
+    } finally {
+      setLoading(false);
     }
-  }, [route, mapboxToken]);
+  };
 
-  if (showTokenInput) {
+  useEffect(() => {
+    loadMapVisualization();
+  }, [route, routes, flights, routeType, showNetworkOverview, showComparison]);
+
+  const handleRefresh = () => {
+    loadMapVisualization();
+  };
+
+  if (error) {
     return (
-      <div className="p-8 space-y-4">
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            To display the interactive map, please enter your Mapbox access token. You can get one for free at{" "}
-            <a
-              href="https://mapbox.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
-            >
-              mapbox.com
-            </a>
-          </AlertDescription>
-        </Alert>
-        
-        <div className="space-y-2">
-          <Label htmlFor="mapbox-token">Mapbox Access Token</Label>
-          <div className="flex gap-2">
-            <Input
-              id="mapbox-token"
-              type="password"
-              placeholder="pk.eyJ1..."
-              value={mapboxToken}
-              onChange={(e) => setMapboxToken(e.target.value)}
-              className="flex-1"
-            />
-            <button
-              onClick={() => {
-                if (mapboxToken.trim()) {
-                  setShowTokenInput(false);
-                }
-              }}
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-            >
-              Load Map
-            </button>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-600">
+            <Map className="h-5 w-5" />
+            Map Visualization Error
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={handleRefresh} variant="outline">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Map className="h-5 w-5" />
+            {showNetworkOverview ? "Network Overview" : showComparison ? "Routes Comparison" : "Route Visualization"}
+          </CardTitle>
+          <CardDescription>
+            {showNetworkOverview 
+              ? "Loading flight network overview..."
+              : showComparison 
+              ? "Loading routes comparison..."
+              : "Loading route visualization..."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-[500px]">
+            <div className="text-center">
+              <RefreshCw className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Generating map with Folium...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!mapHtml) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Map className="h-5 w-5" />
+            Route Visualization
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">
+              {route.length === 0 ? "No route data to visualize" : "Click refresh to load the map"}
+            </p>
+            {route.length > 0 && (
+              <Button onClick={handleRefresh}>
+                <Map className="mr-2 h-4 w-4" />
+                Load Map
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="relative w-full h-[500px]">
-      <div ref={mapContainer} className="absolute inset-0 rounded-b-lg" />
-    </div>
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              {showNetworkOverview ? (
+                <>
+                  <Network className="h-5 w-5" />
+                  Flight Network Overview
+                </>
+              ) : showComparison ? (
+                <>
+                  <RouteIcon className="h-5 w-5" />
+                  Routes Comparison
+                </>
+              ) : (
+                <>
+                  <Map className="h-5 w-5" />
+                  Route Visualization
+                </>
+              )}
+            </CardTitle>
+            <CardDescription className="flex items-center gap-2 mt-2">
+              {showNetworkOverview ? (
+                "Interactive map showing all airports and flight connections"
+              ) : showComparison ? (
+                `Comparing ${routes.length} different routes`
+              ) : (
+                <>
+                  Route: {route.join(" → ")}
+                  {routeType && (
+                    <Badge variant="secondary" className="ml-2">
+                      {routeType.charAt(0).toUpperCase() + routeType.slice(1)} Optimized
+                    </Badge>
+                  )}
+                </>
+              )}
+            </CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="relative w-full h-[600px] rounded-b-lg overflow-hidden border">
+          {mapHtml ? (
+            <iframe
+              ref={iframeRef}
+              srcDoc={mapHtml}
+              className="w-full h-full border-0"
+              title="Flight Route Visualization"
+              sandbox="allow-scripts allow-same-origin allow-modals allow-forms"
+              loading="lazy"
+              style={{
+                backgroundColor: '#f8f9fa',
+                border: 'none',
+                display: 'block'
+              }}
+              onLoad={() => {
+                console.log('Map iframe loaded successfully');
+              }}
+              onError={(e) => {
+                console.error('Map iframe error:', e);
+                setError('Failed to load map iframe');
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <Map className="h-12 w-12 mx-auto mb-4" />
+                <p>No map data available</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh}
+                  className="mt-2"
+                >
+                  Load Map
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {/* Loading overlay */}
+          {loading && (
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+              <div className="text-center">
+                <RefreshCw className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+                <p className="text-muted-foreground">Loading map...</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
