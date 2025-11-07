@@ -99,6 +99,30 @@ with app.app_context():
         {"flight_number": "AI951", "source_id": 2, "destination_id": 7, "duration": 1.0, "price": 5200, "delay_prob": 0.05, "departure_time": "23:30", "arrival_time": "00:30", "aircraft_type": "Boeing 737"},  # BOM->AMD (premium)
         {"flight_number": "AI952", "source_id": 3, "destination_id": 8, "duration": 2.5, "price": 5800, "delay_prob": 0.16, "departure_time": "02:00", "arrival_time": "04:30", "aircraft_type": "Airbus A320"},  # BLR->PNQ (red-eye)
         {"flight_number": "AI953", "source_id": 4, "destination_id": 9, "duration": 3.0, "price": 6200, "delay_prob": 0.20, "departure_time": "01:15", "arrival_time": "04:15", "aircraft_type": "Boeing 737"},  # MAA->GOI (expensive)
+        
+        # CRITICAL ROUTES FOR DIJKSTRA vs A* DIFFERENCE:
+        # Create scenarios where geographic heuristic misleads A* algorithm
+        
+        # Case 1: DEL -> MAA - Direct route exists but is very expensive
+        # A* might choose this due to straight-line distance heuristic
+        {"flight_number": "AI999", "source_id": 1, "destination_id": 4, "duration": 8.5, "price": 15000, "delay_prob": 0.45, "departure_time": "03:00", "arrival_time": "11:30", "aircraft_type": "Boeing 777"},  # DEL->MAA (EXPENSIVE DIRECT)
+        
+        # Case 2: BOM -> BLR - Direct but expensive and unreliable
+        {"flight_number": "AI998", "source_id": 2, "destination_id": 3, "duration": 6.0, "price": 12000, "delay_prob": 0.35, "departure_time": "04:15", "arrival_time": "10:15", "aircraft_type": "Airbus A380"},  # BOM->BLR (EXPENSIVE DIRECT)
+        
+        # Case 3: Create very cheap alternative multi-hop route DEL -> JAI -> AMD -> HYD -> MAA
+        # This creates the optimal path that Dijkstra will find but A* might miss
+        {"flight_number": "AI997", "source_id": 10, "destination_id": 7, "duration": 2.0, "price": 1200, "delay_prob": 0.05, "departure_time": "05:00", "arrival_time": "07:00", "aircraft_type": "ATR 72"},  # JAI->AMD (SUPER CHEAP)
+        {"flight_number": "AI996", "source_id": 7, "destination_id": 6, "duration": 1.5, "price": 1500, "delay_prob": 0.07, "departure_time": "08:00", "arrival_time": "09:30", "aircraft_type": "ATR 72"},  # AMD->HYD (SUPER CHEAP)
+        {"flight_number": "AI995", "source_id": 6, "destination_id": 4, "duration": 1.2, "price": 1800, "delay_prob": 0.08, "departure_time": "10:00", "arrival_time": "11:12", "aircraft_type": "ATR 72"},  # HYD->MAA (SUPER CHEAP)
+        
+        # Case 4: Alternative moderate route via CCU (geographic heuristic might miss this)
+        # CCU is further from MAA geographically but cheaper total cost
+        {"flight_number": "AI994", "source_id": 5, "destination_id": 4, "duration": 1.5, "price": 2200, "delay_prob": 0.10, "departure_time": "12:00", "arrival_time": "13:30", "aircraft_type": "Boeing 737"},  # CCU->MAA (MODERATE)
+        
+        # Case 5: BOM -> BLR cheaper alternative via PNQ -> GOI -> BLR
+        {"flight_number": "AI993", "source_id": 8, "destination_id": 3, "duration": 2.0, "price": 2500, "delay_prob": 0.09, "departure_time": "14:00", "arrival_time": "16:00", "aircraft_type": "Boeing 737"},  # PNQ->BLR (CHEAP ALTERNATIVE)
+        {"flight_number": "AI992", "source_id": 9, "destination_id": 3, "duration": 1.5, "price": 2000, "delay_prob": 0.06, "departure_time": "17:00", "arrival_time": "18:30", "aircraft_type": "Airbus A320"},  # GOI->BLR (CHEAP ALTERNATIVE)
     ]
     
     for flight_data in flights_data:
@@ -114,21 +138,26 @@ with app.app_context():
     print("🛫 COMPLEX FLIGHT NETWORK CREATED! 🛫")
     print("=" * 50)
     print(f"✅ Network Statistics: {stats}")
-    print("\n🚫 NO DIRECT ROUTES FOR:")
-    print("   • DEL ↔ BLR (requires 2+ hops)")
-    print("   • DEL ↔ MAA (via CCU)")  
-    print("   • BOM ↔ BLR (via HYD)")
-    print("   • BOM ↔ MAA (via HYD)")
-    print("   • BOM ↔ CCU (via DEL or HYD)")
-    print("   • BLR ↔ CCU (via MAA or HYD)")
-    print("\n🔗 MULTI-HOP SCENARIOS:")
-    print("   • DEL → BLR: DEL→BOM→HYD→BLR or DEL→CCU→MAA→BLR")
-    print("   • BOM → MAA: BOM→HYD→MAA") 
-    print("   • DEL → GOI: DEL→BOM→GOI")
-    print("   • CCU → GOI: CCU→HYD→BOM→GOI")
-    print("\n🎯 ALGORITHM OPTIMIZATION:")
-    print("   • Dijkstra's will find guaranteed optimal multi-hop routes")
-    print("   • A* will use heuristics for faster pathfinding")
+    print("\n🚫 EXPENSIVE DIRECT ROUTES:")
+    print("   • DEL → MAA: ₹15,000 (8.5h) vs ₹6,700 via DEL→JAI→AMD→HYD→MAA (5.7h)")  
+    print("   • BOM → BLR: ₹12,000 (6h) vs ₹4,400 via BOM→PNQ→GOI→BLR (5h)")
+    print("   • A* heuristic may choose expensive direct routes!")
+    print("\n🔗 OPTIMAL MULTI-HOP SCENARIOS (Dijkstra's advantage):")
+    print("   • DEL → MAA: DEL→JAI→AMD→HYD→MAA (₹6,700 total)")
+    print("   • BOM → BLR: BOM→PNQ→GOI→BLR (₹4,400 total)") 
+    print("   • DEL → BLR: DEL→BOM→HYD→BLR or cheaper via DEL→JAI→AMD→HYD→BLR")
+    print("   • CCU → MAA: Direct ₹2,200 vs via HYD ₹4,500")
+    print("\n🎯 ALGORITHM COMPARISON:")
+    print("   🔴 A* WEAKNESS: Geographic heuristic favors direct routes")
+    print("      - May choose DEL→MAA direct (₹15,000) due to straight-line distance")
+    print("      - May choose BOM→BLR direct (₹12,000) over multi-hop")
+    print("   🟢 DIJKSTRA'S STRENGTH: Always finds true optimal cost")
+    print("      - Will find DEL→JAI→AMD→HYD→MAA (₹6,700)")
+    print("      - Will find BOM→PNQ→GOI→BLR (₹4,400)")
+    print("\n⚡ TEST CASES FOR DIFFERENT RESULTS:")
+    print("   1. DEL → MAA: A* likely chooses ₹15K direct, Dijkstra finds ₹6.7K route")
+    print("   2. BOM → BLR: A* likely chooses ₹12K direct, Dijkstra finds ₹4.4K route")
+    print("   3. Cost difference up to 3x between algorithms!")
     print("   • Cost vs Time vs Reliability trade-offs will be significant")
     print("\n📊 ROUTE COMPLEXITY:")
     print(f"   • Total airports: {len(airports_data)}")
@@ -136,3 +165,6 @@ with app.app_context():
     print("   • Hub structure: DEL, BOM, HYD as major hubs")
     print("   • Regional connections via AMD, PNQ, GOI, JAI")
     print("\n🔧 Ready for advanced graph algorithms!")
+    print("\n🧪 TO TEST ALGORITHM DIFFERENCES:")
+    print("   Run: python test_algorithms.py")
+    print("   Compare routes for DEL→MAA and BOM→BLR")

@@ -6,10 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import FindRoutes from "./pages/FindRoutes";
 import RouteResults from "./pages/RouteResults";
-import Predictions from "./pages/Predictions";
-import NetworkMonitor from "./pages/NetworkMonitor";
-import Booking from "./pages/Booking";
-import Bookings from "./pages/Bookings";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -29,10 +25,6 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/find-routes" element={<FindRoutes />} />
               <Route path="/results" element={<RouteResults />} />
-              <Route path="/predictions" element={<Predictions />} />
-              <Route path="/network-monitor" element={<NetworkMonitor />} />
-              <Route path="/booking" element={<Booking />} />
-              <Route path="/bookings" element={<Bookings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

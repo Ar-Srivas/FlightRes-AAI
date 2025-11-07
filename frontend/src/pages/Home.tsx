@@ -1,61 +1,16 @@
 import { Link } from "react-router-dom";
 import {
-  Plane,
   TrendingDown,
   Clock,
   Shield,
   ArrowRight,
-  BarChart3,
-  Zap,
-  GitBranch,
-  Activity,
-  Brain,
-  Network
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import DebugPanel from "@/components/DebugPanel";
 
 const Home = () => {
-  const features = [
-    {
-      icon: GitBranch,
-      title: "Graph Theory",
-      description: "Advanced network analysis with airports as nodes and flights as edges",
-      color: "text-blue-600"
-    },
-    {
-      icon: BarChart3,
-      title: "Dijkstra's Algorithm",
-      description: "Guaranteed optimal paths for cost, time, and reliability optimization",
-      color: "text-green-600"
-    },
-    {
-      icon: Zap,
-      title: "A* Algorithm",
-      description: "Heuristic-based search for faster route discovery with geographic intelligence",
-      color: "text-yellow-600"
-    },
-    {
-      icon: Brain,
-      title: "AI Predictions",
-      description: "Machine learning models predict delays and optimize routes in real-time",
-      color: "text-purple-600"
-    },
-    {
-      icon: Activity,
-      title: "Live Monitoring",
-      description: "Real-time network health monitoring and disruption management",
-      color: "text-red-600"
-    },
-    {
-      icon: Network,
-      title: "Dynamic Re-routing",
-      description: "Instant alternative route calculation when flights are delayed or cancelled",
-      color: "text-indigo-600"
-    },
-  ];
-
   const algorithmFeatures = [
     {
       icon: TrendingDown,
@@ -162,34 +117,13 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Core Technologies */}
-      <section className="py-20">
+      {/* Debug Panel - Temporary for testing */}
+      <section className="py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-              Advanced{" "}Technologies
-            </h2>
-            <br />
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Built on cutting-edge computer science algorithms and graph theory principles
-            </p>
-            <br />
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-                <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <CardHeader>
-                    <feature.icon className={`h-12 w-12 ${feature.color} mb-4`} />
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base leading-relaxed">
-                      {feature.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
-            ))}
-          </div>
+          <DebugPanel />
         </div>
       </section>
+
     </div>
   );
 };

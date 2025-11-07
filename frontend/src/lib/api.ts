@@ -114,7 +114,11 @@ class FlightNetworkAPI {
 
   // Airport and Flight Management
   async getAirports(): Promise<Airport[]> {
-    return this.request<Airport[]>('/flights/airports');
+    console.log('[API] Fetching airports...');
+    const response = await this.request<Airport[]>('/flights/airports');
+    console.log('[API] Received airports:', response.length, 'airports');
+    console.log('[API] Sample airports:', response.slice(0, 3).map(a => `${a.code} - ${a.city}`));
+    return response;
   }
 
   async getFlights(): Promise<Flight[]> {
@@ -254,7 +258,7 @@ class FlightNetworkAPI {
     flights?: string[];
     route_type?: string;
   }): Promise<string> {
-    console.log('Fetching route visualization for:', params);
+    console.log('[API] Fetching route visualization for:', params);
     const response = await fetch(`${API_BASE_URL}/routes/visualize-route`, {
       method: 'POST',
       headers: {
@@ -263,34 +267,41 @@ class FlightNetworkAPI {
       body: JSON.stringify(params),
     });
     
+    console.log('[API] Route visualization response status:', response.status);
+    console.log('[API] Route visualization response headers:', Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Route visualization error:', errorText);
-      throw new Error(`Failed to get route visualization: HTTP ${response.status}`);
+      console.error('[API] Route visualization error:', errorText);
+      throw new Error(`Failed to get route visualization: HTTP ${response.status} - ${errorText.substring(0, 200)}`);
     }
     
     const htmlContent = await response.text();
-    console.log('Received HTML content length:', htmlContent.length);
+    console.log('[API] Received HTML content length:', htmlContent.length);
+    console.log('[API] HTML content preview:', htmlContent.substring(0, 500));
     return htmlContent;
   }
 
   async getNetworkVisualization(): Promise<string> {
-    console.log('Fetching network visualization');
+    console.log('[API] Fetching network visualization');
     const response = await fetch(`${API_BASE_URL}/routes/visualize-network`);
+    
+    console.log('[API] Network visualization response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Network visualization error:', errorText);
-      throw new Error(`Failed to get network visualization: HTTP ${response.status}`);
+      console.error('[API] Network visualization error:', errorText);
+      throw new Error(`Failed to get network visualization: HTTP ${response.status} - ${errorText.substring(0, 200)}`);
     }
     
     const htmlContent = await response.text();
-    console.log('Received network HTML content length:', htmlContent.length);
+    console.log('[API] Received network HTML content length:', htmlContent.length);
     return htmlContent;
   }
 
   async getRoutesComparison(routes: Route[]): Promise<string> {
-    console.log('Fetching routes comparison for:', routes.length, 'routes');
+    console.log('[API] Fetching routes comparison for:', routes.length, 'routes');
+    console.log('[API] Routes data:', routes);
     const response = await fetch(`${API_BASE_URL}/routes/visualize-comparison`, {
       method: 'POST',
       headers: {
@@ -299,14 +310,16 @@ class FlightNetworkAPI {
       body: JSON.stringify({ routes }),
     });
     
+    console.log('[API] Routes comparison response status:', response.status);
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Routes comparison error:', errorText);
-      throw new Error(`Failed to get routes comparison: HTTP ${response.status}`);
+      console.error('[API] Routes comparison error:', errorText);
+      throw new Error(`Failed to get routes comparison: HTTP ${response.status} - ${errorText.substring(0, 200)}`);
     }
     
     const htmlContent = await response.text();
-    console.log('Received comparison HTML content length:', htmlContent.length);
+    console.log('[API] Received comparison HTML content length:', htmlContent.length);
     return htmlContent;
   }
 }

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Route Visualization Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            margin-bottom: 20px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #mapContainer {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .loading {
+            background: #e7f3ff;
+            color: #0066cc;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .route-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛫 Flight Route Visualization Test</h1>
+    <p>Testing the Folium map integration with the backend API</p>
+
+    <div class="container">
+        <h3>1. Test Airport Data</h3>
+        <button onclick="testAirports()">Load Airports</button>
+        <div id="airportStatus"></div>
+        <div id="airportList"></div>
+    </div>
+
+    <div class="container">
+        <h3>2. Test Route Finding</h3>
+        <button onclick="findRoute()">Find Route: DEL → BLR</button>
+        <button onclick="compareAlgorithms()">Compare Algorithms: BOM → BLR</button>
+        <div id="routeStatus"></div>
+        <div id="routeInfo"></div>
+    </div>
+
+    <div class="container">
+        <h3>3. Test Map Visualization</h3>
+        <button onclick="loadRouteMap()">Load Route Map</button>
+        <button onclick="loadNetworkMap()">Load Network Overview</button>
+        <div id="mapStatus"></div>
+    </div>
+
+    <div id="mapContainer"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:5001';
+        let currentRoute = null;
+
+        function updateStatus(elementId, message, type = 'loading') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = type;
+        }
+
+        async function testAirports() {
+            updateStatus('airportStatus', 'Loading airports...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/flights/airports`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const airports = await response.json();
+                updateStatus('airportStatus', `✅ Loaded ${airports.length} airports`, 'success');
+                
+                document.getElementById('airportList').innerHTML = 
+                    `<div class="route-info">
+                        <strong>Available Airports:</strong><br>
+                        ${airports.map(a => `${a.code} - ${a.name} (${a.city})`).join('<br>')}
+                     </div>`;
+            } catch (error) {
+                updateStatus('airportStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function findRoute() {
+            updateStatus('routeStatus', 'Finding route DEL → BLR...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/routes/find`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source: 'DEL',
+                        destination: 'BLR',
+                        algorithm: 'multiple'
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                currentRoute = data.routes[0];
+                updateStatus('routeStatus', `✅ Found ${data.routes_found} route(s)`, 'success');
+                
+                document.getElementById('routeInfo').innerHTML = 
+                    `<div class="route-info">
+                        <strong>Best Route:</strong> ${currentRoute.airports.join(' → ')}<br>
+                        <strong>Cost:</strong> ₹${currentRoute.total_cost}<br>
+                        <strong>Duration:</strong> ${currentRoute.total_duration}h<br>
+                        <strong>Flights:</strong> ${currentRoute.flights.join(', ')}
+                     </div>`;
+            } catch (error) {
+                updateStatus('routeStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function compareAlgorithms() {
+            updateStatus('routeStatus', 'Comparing algorithms BOM → BLR...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/routes/compare-algorithms`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source: 'BOM',
+                        destination: 'BLR',
+                        optimization: 'cost'
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                updateStatus('routeStatus', '✅ Algorithm comparison completed', 'success');
+                
+                const dijkstra = data.dijkstra;
+                const astar = data.a_star;
+                const comparison = data.comparison;
+                
+                document.getElementById('routeInfo').innerHTML = 
+                    `<div class="route-info">
+                        <strong>📊 Dijkstra's Algorithm:</strong><br>
+                        Route: ${dijkstra.airports.join(' → ')}<br>
+                        Cost: ₹${dijkstra.total_cost} | Duration: ${dijkstra.total_duration}h<br><br>
+                        
+                        <strong>⚡ A* Algorithm:</strong><br>
+                        Route: ${astar.airports.join(' → ')}<br>
+                        Cost: ₹${astar.total_cost} | Duration: ${astar.total_duration}h<br><br>
+                        
+                        <strong>🆚 Comparison:</strong><br>
+                        Same route: ${comparison.same_route ? '✅ Yes' : '❌ No'}<br>
+                        ${!comparison.same_route ? `Cost difference: ₹${comparison.cost_difference}` : ''}
+                     </div>`;
+                     
+                currentRoute = dijkstra; // Use dijkstra route for map
+            } catch (error) {
+                updateStatus('routeStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadRouteMap() {
+            if (!currentRoute) {
+                updateStatus('mapStatus', '❌ Please find a route first', 'error');
+                return;
+            }
+            
+            updateStatus('mapStatus', 'Loading route map...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/routes/visualize-route`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        airports: currentRoute.airports,
+                        flights: currentRoute.flights,
+                        route_type: currentRoute.route_type
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const mapHtml = await response.text();
+                updateStatus('mapStatus', `✅ Route map loaded (${mapHtml.length} chars)`, 'success');
+                
+                // Display the map
+                document.getElementById('mapContainer').innerHTML = 
+                    `<iframe src="data:text/html;charset=utf-8,${encodeURIComponent(mapHtml)}" 
+                            width="100%" height="600px" frameborder="0"></iframe>`;
+            } catch (error) {
+                updateStatus('mapStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadNetworkMap() {
+            updateStatus('mapStatus', 'Loading network overview...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/routes/visualize-network`);
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const mapHtml = await response.text();
+                updateStatus('mapStatus', `✅ Network map loaded (${mapHtml.length} chars)`, 'success');
+                
+                // Display the map
+                document.getElementById('mapContainer').innerHTML = 
+                    `<iframe src="data:text/html;charset=utf-8,${encodeURIComponent(mapHtml)}" 
+                            width="100%" height="600px" frameborder="0"></iframe>`;
+            } catch (error) {
+                updateStatus('mapStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-load airports on page load
+        window.onload = function() {
+            testAirports();
+        };
+    </script>
+</body>
+</html>

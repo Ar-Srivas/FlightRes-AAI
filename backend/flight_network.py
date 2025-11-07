@@ -321,6 +321,63 @@ class FlightNetwork:
         
         return predictions
     
+    def find_route(self, source: str, destination: str, algorithm: str = "dijkstra", optimization: str = "cost"):
+        """
+        Find a route using specified algorithm.
+        
+        Args:
+            source: Source airport code
+            destination: Destination airport code  
+            algorithm: 'dijkstra' or 'astar'
+            optimization: 'cost', 'time', or 'reliability'
+        
+        Returns:
+            Dict with route information or None if no route found
+        """
+        if algorithm.lower() == "dijkstra":
+            route = self.dijkstra_shortest_path(source, destination, optimization)
+        elif algorithm.lower() == "astar":
+            route = self.a_star_shortest_path(source, destination, optimization)
+        else:
+            raise ValueError(f"Unknown algorithm: {algorithm}")
+        
+        if not route:
+            return None
+        
+        # Convert Route object to dict format expected by test script
+        flights_data = []
+        
+        for i, flight_num in enumerate(route.flights):
+            # Find flight details
+            for airport_code, edges in self.graph.items():
+                for edge in edges:
+                    if edge.flight_number == flight_num:
+                        # Get flight details from database
+                        flight = Flight.query.filter_by(flight_number=flight_num).first()
+                        if flight:
+                            source_airport = Airport.query.get(flight.source_id)
+                            dest_airport = Airport.query.get(flight.destination_id)
+                            
+                            flights_data.append({
+                                'flight_number': flight_num,
+                                'source': source_airport.code,
+                                'destination': dest_airport.code,
+                                'price': flight.price,
+                                'duration': flight.duration,
+                                'delay_prob': flight.delay_prob
+                            })
+                        break
+                else:
+                    continue
+                break
+        
+        return {
+            'flights': flights_data,
+            'total_cost': route.total_cost,
+            'total_duration': route.total_duration,
+            'total_delay_prob': route.total_delay_prob
+        }
+    
     def get_network_statistics(self) -> Dict:
         """Get network statistics"""
         total_flights = sum(len(edges) for edges in self.graph.values())

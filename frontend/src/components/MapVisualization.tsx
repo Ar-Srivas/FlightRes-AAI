@@ -39,15 +39,18 @@ const MapVisualization = ({
 
       if (showNetworkOverview) {
         // Load network overview map
-        console.log('Loading network overview map...');
+        console.log('[MapViz] Loading network overview map...');
         htmlContent = await flightAPI.getNetworkVisualization();
       } else if (showComparison && routes.length > 0) {
         // Load routes comparison map
-        console.log('Loading routes comparison map for', routes.length, 'routes...');
+        console.log('[MapViz] Loading routes comparison map for', routes.length, 'routes...');
+        console.log('[MapViz] Routes data:', routes);
         htmlContent = await flightAPI.getRoutesComparison(routes);
       } else if (route.length > 0) {
         // Load single route map
-        console.log('Loading route map for:', route);
+        console.log('[MapViz] Loading route map for:', route);
+        console.log('[MapViz] Flight data:', flights);
+        console.log('[MapViz] Route type:', routeType);
         htmlContent = await flightAPI.getRouteVisualization({
           airports: route,
           flights: flights,
@@ -56,15 +59,18 @@ const MapVisualization = ({
       }
 
       if (htmlContent && htmlContent.trim()) {
-        console.log('Map HTML loaded successfully, size:', htmlContent.length);
+        console.log('[MapViz] Map HTML loaded successfully, size:', htmlContent.length);
+        console.log('[MapViz] HTML preview:', htmlContent.substring(0, 200) + '...');
         setMapHtml(htmlContent);
+        setError("");
       } else {
         throw new Error('Empty HTML content received');
       }
     } catch (err) {
-      console.error("Error loading map:", err);
-      setError(err instanceof Error ? err.message : "Failed to load map visualization");
-      toast.error("Failed to load map visualization");
+      console.error("[MapViz] Error loading map:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to load map visualization";
+      setError(errorMessage);
+      toast.error(`Map Error: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -73,6 +79,26 @@ const MapVisualization = ({
   useEffect(() => {
     loadMapVisualization();
   }, [route, routes, flights, routeType, showNetworkOverview, showComparison]);
+
+  // Create blob URL for the map HTML
+  useEffect(() => {
+    if (mapHtml) {
+      // Create a blob with the HTML content
+      const blob = new Blob([mapHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      
+      // Store the URL for the iframe
+      const iframe = iframeRef.current;
+      if (iframe) {
+        iframe.src = url;
+      }
+      
+      // Cleanup blob URL on unmount
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+  }, [mapHtml]);
 
   const handleRefresh = () => {
     loadMapVisualization();
@@ -203,26 +229,27 @@ const MapVisualization = ({
       <CardContent className="p-0">
         <div className="relative w-full h-[600px] rounded-b-lg overflow-hidden border">
           {mapHtml ? (
-            <iframe
-              ref={iframeRef}
-              srcDoc={mapHtml}
-              className="w-full h-full border-0"
-              title="Flight Route Visualization"
-              sandbox="allow-scripts allow-same-origin allow-modals allow-forms"
-              loading="lazy"
-              style={{
-                backgroundColor: '#f8f9fa',
-                border: 'none',
-                display: 'block'
-              }}
-              onLoad={() => {
-                console.log('Map iframe loaded successfully');
-              }}
-              onError={(e) => {
-                console.error('Map iframe error:', e);
-                setError('Failed to load map iframe');
-              }}
-            />
+            <div className="w-full h-full">
+              <iframe
+                ref={iframeRef}
+                className="w-full h-full border-0"
+                title="Flight Route Visualization"
+                sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"
+                loading="lazy"
+                style={{
+                  backgroundColor: '#f8f9fa',
+                  border: 'none',
+                  display: 'block'
+                }}
+                onLoad={() => {
+                  console.log('[MapViz] Map iframe loaded successfully');
+                }}
+                onError={(e) => {
+                  console.error('[MapViz] Map iframe error:', e);
+                  setError('Failed to load map iframe');
+                }}
+              />
+            </div>
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
               <div className="text-center text-gray-500">
