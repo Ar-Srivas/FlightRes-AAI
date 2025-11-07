@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import DebugPanel from "@/components/DebugPanel";
 
 const Home = () => {
   const algorithmFeatures = [
@@ -114,13 +113,6 @@ const Home = () => {
                 </Card>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Debug Panel - Temporary for testing */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <DebugPanel />
         </div>
       </section>
 
