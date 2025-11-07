@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { TrendingUp, AlertTriangle, CheckCircle, Info, RefreshCw, Plane, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +21,11 @@ const Predictions = () => {
         flightAPI.getDelayPredictions(),
         flightAPI.getNetworkStats()
       ]);
-      
+
       setPredictions(predictionsData.predictions);
       setNetworkStats(statsData);
       setLastUpdated(new Date(predictionsData.generated_at));
-      
+
       if (showToast) {
         toast.success('Predictions updated successfully');
       }
@@ -74,7 +73,7 @@ const Predictions = () => {
     const medium = predictions.filter(p => p.risk_level === 'medium').length;
     const low = predictions.filter(p => p.risk_level === 'low').length;
     const total = predictions.length;
-    
+
     return { high, medium, low, total };
   };
 
@@ -82,13 +81,7 @@ const Predictions = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
         <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="inline-block"
-          >
             <Plane className="h-12 w-12 text-primary" />
-          </motion.div>
           <p className="mt-4 text-muted-foreground">Analyzing flight delay patterns...</p>
         </div>
       </div>
@@ -101,11 +94,6 @@ const Predictions = () => {
     <div className="min-h-screen py-12 bg-gradient-to-b from-background via-secondary/20 to-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
           <h1 className="text-4xl font-bold mb-4">
             Flight{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -115,7 +103,7 @@ const Predictions = () => {
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
             AI-powered delay predictions using graph theory and real-time network analysis
           </p>
-          
+
           <div className="flex items-center justify-center gap-4">
             <Button
               variant="outline"
@@ -140,16 +128,9 @@ const Predictions = () => {
               </p>
             )}
           </div>
-        </motion.div>
 
         {/* Network Overview */}
         {networkStats && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-12"
-          >
             <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -184,16 +165,10 @@ const Predictions = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
         )}
 
         {/* Risk Distribution */}
         <div className="grid md:grid-cols-4 gap-6 mb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -207,13 +182,7 @@ const Predictions = () => {
                 <p className="text-sm text-muted-foreground">Active flights tracked</p>
               </CardContent>
             </Card>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -227,13 +196,6 @@ const Predictions = () => {
                 <p className="text-sm text-muted-foreground">Reliable flights</p>
               </CardContent>
             </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -247,13 +209,6 @@ const Predictions = () => {
                 <p className="text-sm text-muted-foreground">Monitor closely</p>
               </CardContent>
             </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -267,15 +222,7 @@ const Predictions = () => {
                 <p className="text-sm text-muted-foreground">Likely delays</p>
               </CardContent>
             </Card>
-          </motion.div>
         </div>
-
-        {/* Predictions List */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
           <h2 className="text-2xl font-bold mb-6">Flight Delay Predictions</h2>
           {predictions.length === 0 ? (
             <Card>
@@ -288,12 +235,7 @@ const Predictions = () => {
               {predictions
                 .sort((a, b) => b.predicted_delay_probability - a.predicted_delay_probability)
                 .map((pred, index) => (
-                  <motion.div
-                    key={`${pred.flight_number}-${index}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                  >
+
                     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                       <CardHeader>
                         <div className="flex items-start justify-between">
@@ -356,19 +298,10 @@ const Predictions = () => {
                         </div>
                       </CardContent>
                     </Card>
-                  </motion.div>
                 ))}
             </div>
           )}
-        </motion.div>
 
-        {/* Info Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mt-12"
-        >
           <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -388,12 +321,11 @@ const Predictions = () => {
                 <li>Airline performance statistics</li>
               </ul>
               <p>
-                Predictions are updated continuously as new data becomes available, 
+                Predictions are updated continuously as new data becomes available,
                 ensuring you have the most accurate delay forecasts for informed decision-making.
               </p>
             </CardContent>
           </Card>
-        </motion.div>
       </div>
     </div>
   );

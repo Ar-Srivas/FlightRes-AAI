@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, Calendar, Plane, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,7 +59,7 @@ const FindRoutes = () => {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.source || !formData.destination) {
       toast.error("Please select both source and destination airports");
       return;
@@ -80,7 +79,7 @@ const FindRoutes = () => {
         algorithm: formData.algorithm,
         optimization: formData.optimization,
       });
-      
+
       navigate(`/results?${params.toString()}`);
     } catch (error) {
       console.error('Error during search:', error);
@@ -109,12 +108,6 @@ const FindRoutes = () => {
   return (
     <div className="min-h-screen py-12 bg-gradient-to-b from-background via-secondary/20 to-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-4xl mx-auto"
-        >
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">
@@ -130,12 +123,6 @@ const FindRoutes = () => {
 
           {/* Network Status */}
           {networkStats && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="mb-8"
-            >
               <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -196,7 +183,6 @@ const FindRoutes = () => {
                   )}
                 </CardContent>
               </Card>
-            </motion.div>
           )}
 
           {/* Search Card */}
@@ -271,9 +257,9 @@ const FindRoutes = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-popover">
-                        <SelectItem value="multiple">🎯 Multiple Routes</SelectItem>
-                        <SelectItem value="dijkstra">📊 Dijkstra's Algorithm</SelectItem>
-                        <SelectItem value="a_star">⭐ A* Algorithm</SelectItem>
+                        <SelectItem value="multiple">Multiple Routes</SelectItem>
+                        <SelectItem value="dijkstra">Dijkstra's Algorithm</SelectItem>
+                        <SelectItem value="a_star">A* Algorithm</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -288,9 +274,9 @@ const FindRoutes = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-popover">
-                        <SelectItem value="cost">💰 Lowest Cost</SelectItem>
-                        <SelectItem value="time">⚡ Fastest Route</SelectItem>
-                        <SelectItem value="reliability">🛡️ Most Reliable</SelectItem>
+                        <SelectItem value="cost">Lowest Cost</SelectItem>
+                        <SelectItem value="time">Fastest Route</SelectItem>
+                        <SelectItem value="reliability">Most Reliable</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -335,12 +321,6 @@ const FindRoutes = () => {
           </Card>
 
           {/* Popular Routes */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-12"
-          >
             <h3 className="text-xl font-semibold mb-6 text-center">Popular Indian Routes</h3>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {indianRoutes.map((route, index) => (
@@ -367,8 +347,6 @@ const FindRoutes = () => {
                 </button>
               ))}
             </div>
-          </motion.div>
-        </motion.div>
       </div>
     </div>
   );

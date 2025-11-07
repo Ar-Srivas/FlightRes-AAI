@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Plane, Calendar, MapPin, DollarSign } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,11 +26,6 @@ const Bookings = () => {
   return (
     <div className="min-h-screen py-12 bg-gradient-to-b from-background via-secondary/20 to-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
           <h1 className="text-4xl font-bold mb-4">
             My{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -39,29 +33,18 @@ const Bookings = () => {
             </span>
           </h1>
           <p className="text-muted-foreground text-lg">Manage and view your flight reservations</p>
-        </motion.div>
 
         {bookings.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-20"
-          >
-            <Plane className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
+          <> <Plane className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
             <h2 className="text-2xl font-semibold mb-4">No Bookings Yet</h2>
             <p className="text-muted-foreground mb-8">
               Start exploring routes and book your next flight
             </p>
-          </motion.div>
+            </>
         ) : (
           <div className="grid gap-6 max-w-4xl mx-auto">
             {bookings.map((booking, index) => (
-              <motion.div
-                key={booking.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
+              <>
                 <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -115,7 +98,7 @@ const Bookings = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </>
             ))}
           </div>
         )}

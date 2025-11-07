@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { CheckCircle, Plane, User, Mail, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,7 @@ const Booking = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isBooked, setIsBooked] = useState(false);
-  
+
   const route = searchParams.get("route") || "";
   const price = searchParams.get("price") || "0";
 
@@ -28,7 +27,7 @@ const Booking = () => {
 
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!formData.firstName || !formData.lastName || !formData.email) {
       toast.error("Please fill in all required fields");
@@ -45,11 +44,6 @@ const Booking = () => {
   if (isBooked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-center max-w-md"
-        >
           <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-12 w-12 text-white" />
           </div>
@@ -65,7 +59,6 @@ const Booking = () => {
               View My Bookings
             </Button>
           </div>
-        </motion.div>
       </div>
     );
   }
@@ -73,11 +66,6 @@ const Booking = () => {
   return (
     <div className="min-h-screen py-12 bg-gradient-to-b from-background via-secondary/20 to-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
           <h1 className="text-4xl font-bold mb-4">
             Complete Your{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -85,16 +73,10 @@ const Booking = () => {
             </span>
           </h1>
           <p className="text-muted-foreground text-lg">Just a few more details to confirm your flight</p>
-        </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Booking Form */}
           <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
               <Card className="shadow-xl">
                 <CardHeader>
                   <CardTitle>Passenger Information</CardTitle>
@@ -158,7 +140,7 @@ const Booking = () => {
                         <CreditCard className="h-5 w-5 text-primary" />
                         Payment Information
                       </h3>
-                      
+
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="cardNumber">Card Number (Demo)</Label>
@@ -169,7 +151,7 @@ const Booking = () => {
                             onChange={(e) => setFormData({ ...formData, cardNumber: e.target.value })}
                           />
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="expiryDate">Expiry Date</Label>
@@ -200,17 +182,10 @@ const Booking = () => {
                   </form>
                 </CardContent>
               </Card>
-            </motion.div>
           </div>
 
           {/* Booking Summary */}
           <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="sticky top-24"
-            >
               <Card className="shadow-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -254,7 +229,6 @@ const Booking = () => {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
           </div>
         </div>
       </div>

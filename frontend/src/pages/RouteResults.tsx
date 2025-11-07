@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { ArrowLeft, Clock, DollarSign, TrendingUp, MapPin, Plane, RefreshCw, BarChart3, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +49,7 @@ const RouteResults = () => {
 
   const handleCompareAlgorithms = async () => {
     if (!source || !destination) return;
-    
+
     setComparing(true);
     try {
       const comparison = await flightAPI.compareAlgorithms({
@@ -92,13 +91,7 @@ const RouteResults = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
         <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="inline-block"
-          >
             <Plane className="h-12 w-12 text-primary" />
-          </motion.div>
           <p className="mt-4 text-muted-foreground">Optimizing routes with graph algorithms...</p>
           <p className="text-sm text-muted-foreground mt-2">
             Using {algorithm === 'multiple' ? 'Multiple Algorithms' : algorithm === 'dijkstra' ? "Dijkstra's Algorithm" : "A* Algorithm"}
@@ -134,12 +127,6 @@ const RouteResults = () => {
           Back to Search
         </Button>
 
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
           <h1 className="text-3xl font-bold mb-2">
             Routes from{" "}
             <span className="text-primary">{source}</span>
@@ -148,26 +135,15 @@ const RouteResults = () => {
           </h1>
           <div className="flex flex-wrap gap-2 items-center">
             <Badge variant="secondary">
-              {routeData.algorithm_used === 'multiple' ? 'Multiple Algorithms' : 
-               routeData.algorithm_used === 'dijkstra' ? "Dijkstra's Algorithm" : 
+              {routeData.algorithm_used === 'multiple' ? 'Multiple Algorithms' :
+               routeData.algorithm_used === 'dijkstra' ? "Dijkstra's Algorithm" :
                "A* Algorithm"}
-            </Badge>
-            <Badge variant="outline">
-              Optimized for: {routeData.optimization_criteria}
             </Badge>
             <Badge variant="outline">
               {routeData.routes_found} route{routeData.routes_found !== 1 ? 's' : ''} found
             </Badge>
           </div>
-        </motion.div>
 
-        {/* Algorithm Comparison Button */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-6"
-        >
           <Button
             variant="outline"
             onClick={handleCompareAlgorithms}
@@ -181,12 +157,10 @@ const RouteResults = () => {
               </>
             ) : (
               <>
-                <BarChart3 className="mr-2 h-4 w-4" />
                 Compare Dijkstra vs A*
               </>
             )}
           </Button>
-        </motion.div>
 
         <Tabs defaultValue="routes" className="space-y-6">
           <TabsList>
@@ -200,12 +174,6 @@ const RouteResults = () => {
           <TabsContent value="routes" className="space-y-6">
             {/* Route Cards */}
             {routeData.routes.map((route, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-              >
                 <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -248,11 +216,11 @@ const RouteResults = () => {
                       </div>
                       <div>
                         <div className="text-sm text-muted-foreground mb-1">Delay Risk</div>
-                        <Badge 
-                          variant={route.average_delay_probability < 0.1 ? "default" : 
+                        <Badge
+                          variant={route.average_delay_probability < 0.1 ? "default" :
                                   route.average_delay_probability < 0.2 ? "secondary" : "destructive"}
                         >
-                          {route.average_delay_probability < 0.1 ? 'Low' : 
+                          {route.average_delay_probability < 0.1 ? 'Low' :
                            route.average_delay_probability < 0.2 ? 'Medium' : 'High'}
                         </Badge>
                       </div>
@@ -270,7 +238,7 @@ const RouteResults = () => {
                               </div>
                               <div className="font-semibold text-sm">{airport}</div>
                               <div className="text-xs text-muted-foreground">
-                                {airportIndex === 0 ? "Origin" : 
+                                {airportIndex === 0 ? "Origin" :
                                  airportIndex === route.airports.length - 1 ? "Destination" : "Layover"}
                               </div>
                             </div>
@@ -307,7 +275,6 @@ const RouteResults = () => {
                     </Button>
                   </CardContent>
                 </Card>
-              </motion.div>
             ))}
           </TabsContent>
 
@@ -411,12 +378,12 @@ const RouteResults = () => {
 
           <TabsContent value="map">
             {routeData.routes.length > 1 ? (
-              <MapVisualization 
+              <MapVisualization
                 routes={routeData.routes}
                 showComparison={true}
               />
             ) : routeData.routes.length === 1 ? (
-              <MapVisualization 
+              <MapVisualization
                 route={routeData.routes[0].airports}
                 flights={routeData.routes[0].flights}
                 routeType={routeData.routes[0].route_type}

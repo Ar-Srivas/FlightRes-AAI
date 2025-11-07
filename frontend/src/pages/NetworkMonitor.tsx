@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  Plane, 
-  RefreshCw, 
-  Settings, 
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Plane,
+  RefreshCw,
+  Settings,
   TrendingDown,
   TrendingUp,
   Users,
@@ -43,10 +42,10 @@ const NetworkMonitor = () => {
         flightAPI.getNetworkStats(),
         flightAPI.getFlights()
       ]);
-      
+
       setNetworkStats(statsData);
       setFlights(flightsData);
-      
+
       if (showToast) {
         toast.success('Network data refreshed');
       }
@@ -83,15 +82,15 @@ const NetworkMonitor = () => {
       });
 
       toast.success(result.message);
-      
+
       // Reset form
       setSelectedFlight("");
       setReason("");
       setDelayMinutes(60);
-      
+
       // Refresh data
       loadData();
-      
+
     } catch (error) {
       console.error('Error handling disruption:', error);
       toast.error('Failed to handle disruption');
@@ -129,13 +128,7 @@ const NetworkMonitor = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
         <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="inline-block"
-          >
             <Settings className="h-12 w-12 text-primary" />
-          </motion.div>
           <p className="mt-4 text-muted-foreground">Loading network monitoring data...</p>
         </div>
       </div>
@@ -149,11 +142,6 @@ const NetworkMonitor = () => {
     <div className="min-h-screen py-12 bg-gradient-to-b from-background via-secondary/20 to-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
           <h1 className="text-4xl font-bold mb-4">
             Network{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -163,7 +151,7 @@ const NetworkMonitor = () => {
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
             Real-time flight network monitoring and disruption management
           </p>
-          
+
           <div className="flex items-center justify-center gap-4">
             <Button
               variant="outline"
@@ -182,7 +170,7 @@ const NetworkMonitor = () => {
                 </>
               )}
             </Button>
-            
+
             <Button
               variant="default"
               onClick={buildNetwork}
@@ -201,16 +189,9 @@ const NetworkMonitor = () => {
               )}
             </Button>
           </div>
-        </motion.div>
 
         {/* Network Overview */}
         {networkStats && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               <Card>
                 <CardContent className="p-4">
@@ -286,7 +267,6 @@ const NetworkMonitor = () => {
                 </CardContent>
               </Card>
             </div>
-          </motion.div>
         )}
 
         <Tabs defaultValue="overview" className="space-y-6">
@@ -299,11 +279,6 @@ const NetworkMonitor = () => {
 
           <TabsContent value="overview" className="space-y-6">
             {/* Flight Status Distribution */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -357,14 +332,8 @@ const NetworkMonitor = () => {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
 
             {/* High Risk Flights */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -402,7 +371,6 @@ const NetworkMonitor = () => {
                   )}
                 </CardContent>
               </Card>
-            </motion.div>
           </TabsContent>
 
           <TabsContent value="map">
@@ -410,11 +378,6 @@ const NetworkMonitor = () => {
           </TabsContent>
 
           <TabsContent value="disruptions" className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -502,15 +465,9 @@ const NetworkMonitor = () => {
                   </Button>
                 </CardContent>
               </Card>
-            </motion.div>
           </TabsContent>
 
           <TabsContent value="flights" className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
               <Card>
                 <CardHeader>
                   <CardTitle>All Flights Status</CardTitle>
@@ -536,7 +493,7 @@ const NetworkMonitor = () => {
                           <span className="text-sm text-muted-foreground">
                             {flight.duration}h
                           </span>
-                          <Badge 
+                          <Badge
                             variant={
                               flight.status === 'scheduled' ? 'default' :
                               flight.status === 'delayed' ? 'secondary' :
@@ -554,7 +511,6 @@ const NetworkMonitor = () => {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
           </TabsContent>
         </Tabs>
       </div>
